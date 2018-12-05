@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,11 +39,30 @@ public class ClienteController {
 
 	@ApiOperation(value = "Persiste um novo cliente na base de dados")
 	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Cliente persistido com sucesso"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Localização ou Clima da requisição não encontrados"),
-			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Parâmetro obrigatório não informado ou regra de validação violada") })
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Parâmetro obrigatório não informado ou regra de validação violada"),
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Falha ao tentar estapelecer conexão com um dos servidores externos.")})
 	@PostMapping
 	@Transactional
 	public ResponseEntity<?> persistir(@RequestParam("nome") String nome, @RequestParam("idade") int idade,
+			HttpServletRequest request) throws BusinessException, ExternalErrorException {
+		try {
+			InfoCliente info = infoClienteService.gerarInformacoesCliente(request);
+			clienteService.persistir(nome, idade, info);
+			return ResponseEntity.ok().build();
+		} catch (BadRequestException ex) {
+			return ResponseEntity.badRequest().body(ex.getMessage());
+		} catch(ExternalErrorException ex) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+		}
+	}
+	
+	@ApiOperation(value = "Altera um cliente salvo na base de Dados")
+	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Cliente alterado com sucesso"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Cliente não localizado"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Parâmetro obrigatório não informado ou regra de validação violada")})
+	@PutMapping
+	@Transactional
+	public ResponseEntity<?> alterar(@RequestParam("nome") String nome, @RequestParam("idade") int idade,
 			HttpServletRequest request) throws BusinessException, ExternalErrorException {
 		try {
 			InfoCliente info = infoClienteService.gerarInformacoesCliente(request);
