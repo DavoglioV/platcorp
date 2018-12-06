@@ -8,12 +8,16 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.platcorp.domain.entity.Cliente;
 import com.platcorp.domain.entity.InfoCliente;
 import com.platcorp.exception.BadRequestException;
 import com.platcorp.exception.BusinessException;
@@ -33,7 +37,7 @@ public class ClienteController {
 
 	@Autowired
 	private ClienteService clienteService;
-	
+
 	@Autowired
 	private InfoClienteService infoClienteService;
 
@@ -60,18 +64,31 @@ public class ClienteController {
 	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Cliente alterado com sucesso"),
 			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Cliente não localizado"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Parâmetro obrigatório não informado ou regra de validação violada")})
-	@PutMapping
+	@PutMapping("/{id}")
 	@Transactional
-	public ResponseEntity<?> alterar(@RequestParam("nome") String nome, @RequestParam("idade") int idade,
-			HttpServletRequest request) throws BusinessException, ExternalErrorException {
+	public ResponseEntity<?> alterar(@RequestBody() Cliente cliente, @PathVariable("id") Long id) throws BadRequestException{
 		try {
-			InfoCliente info = infoClienteService.gerarInformacoesCliente(request);
-			clienteService.persistir(nome, idade, info);
+			
+			clienteService.alterar(cliente, id);
 			return ResponseEntity.ok().build();
 		} catch (BadRequestException ex) {
 			return ResponseEntity.badRequest().body(ex.getMessage());
-		} catch(ExternalErrorException ex) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+		}
+	}
+	
+	@ApiOperation(value = "Busca um cliente pelo ID salvo na base de Dados")
+	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Cliente alterado com sucesso"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Cliente não localizado"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Parâmetro obrigatório não informado ou regra de validação violada")})
+	@GetMapping("/{id}")
+	@Transactional
+	public ResponseEntity<?> buscaClientePorId(@PathVariable("id") Long id) throws BadRequestException{
+		try {
+			
+			clienteService.alterar(cliente, id);
+			return ResponseEntity.ok().build();
+		} catch (BadRequestException ex) {
+			return ResponseEntity.badRequest().body(ex.getMessage());
 		}
 	}
 

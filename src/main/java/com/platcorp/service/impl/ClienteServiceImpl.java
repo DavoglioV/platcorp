@@ -1,5 +1,8 @@
 package com.platcorp.service.impl;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +32,50 @@ public class ClienteServiceImpl implements ClienteService {
 		
 		cliente = clienteRepository.saveAndFlush(cliente);
 		return cliente.getId();
+	}
+	
+	@Override
+	public void alterar(Cliente paramCliente, Long id) throws BadRequestException{
+		
+		if (null == paramCliente) {
+			throw new BadRequestException ("Cliente não pode ser nulo.");
+		}
+
+		Optional<Cliente> c = clienteRepository.findById(id);
+		if (c.isPresent()) {
+			c.get().setNome(paramCliente.getNome());
+			c.get().setIdade(paramCliente.getIdade());
+		}else {
+			throw new BadRequestException("Cliente não encontrado.");
+		}
+		
+		clienteRepository.saveAndFlush(c.get());
+		
+	}
+
+	@Override
+	public void deletar(Long id) throws BadRequestException{
+		if(id == null) {
+			throw new BadRequestException("Parametro inválido ou não preenchido.");
+		}
+		clienteRepository.deleteById(id);
+		
+	}
+	
+	@Override
+	public Cliente findClienteById(Long id) throws BadRequestException {
+		
+		if(id == null) {
+			throw new BadRequestException("Parametro inválido ou não preenchido.");
+		}
+		
+		return clienteRepository.findById(id).get();
+		
+	}
+	
+	@Override
+	public List<Cliente> findAll() {
+		return clienteRepository.findAll();
 	}
 
 	/** valida preenchimento dos campos para inserção de um novo cliente
