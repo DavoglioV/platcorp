@@ -31,21 +31,22 @@ public class ClienteServiceTest{
 	@Mock
 	private HttpServletRequest request;
 	
-	private Cliente clienteSalvo;
+	private Cliente clienteSalvo, clienteAlterado;
 	
 	private InfoCliente informacoesCliente;
 
 	@Before
-	public void before() {
+	public void antes() {
 		service = new ClienteServiceImpl();
 		MockitoAnnotations.initMocks(this);
 		
-		clienteSalvo = buildCliente();
-		informacoesCliente = buildInfoCliente();
+		clienteSalvo = geraCliente();
+		clienteAlterado = geraClienteAlterado();
+		informacoesCliente = geraInfoCliente();
 	}
 
 	@Test
-	public void shouldPersistirNovoCliente() throws BusinessException {
+	public void devePersistirNovoCliente() throws BusinessException {
 		Mockito.when(repository.saveAndFlush(Mockito.any())).thenReturn(clienteSalvo);
 		Mockito.when(request.getRemoteAddr()).thenReturn("192.168.1.1");
 		
@@ -56,7 +57,7 @@ public class ClienteServiceTest{
 	}
 	
 	@Test(expected = BadRequestException.class)
-	public void shouldNotPersistirAndThrowsCamposInvalidos() throws BusinessException{
+	public void naoDevePersistirELancaCamposInvalidos() throws BusinessException{
 		Mockito.when(request.getRemoteAddr()).thenReturn("192.168.1.1");
 		
 		try {
@@ -68,15 +69,61 @@ public class ClienteServiceTest{
 		}
 	}
 	
-	private Cliente buildCliente() {
+	@Test(expected = BadRequestException.class)
+	public void NaoDeveAlterarELancaClienteNulo() throws BusinessException{
+			try {
+				service.alterar(null, 01L);
+				fail();
+			}catch (BadRequestException e) {
+				assertThat(e.getMessage(), equalTo("Cliente não pode ser nulo."));
+				throw e;
+			}
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void NaoDeveAlterarELancaClienteNaoEncontrado() throws BusinessException{
+		Mockito.when(repository.saveAndFlush(Mockito.any())).thenReturn(clienteAlterado);
+			try {
+				clienteSalvo.setNome("Jose da Silva");
+				service.alterar(clienteSalvo, 01L);
+				fail();
+			}catch (BadRequestException e) {
+				assertThat(e.getMessage(), equalTo("Cliente não encontrado."));
+				throw e;
+			}
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void NaoDeveDeletarELancaParametroInvalido() throws BusinessException{
+		
+			try {
+				service.deletar(null);
+				fail();
+			}catch (BadRequestException e) {
+				assertThat(e.getMessage(), equalTo("Parametro inválido ou não preenchido."));
+				throw e;
+			}
+	}
+	
+	private Cliente geraCliente() {
 		Cliente cliente = Cliente.builder()
 				.id(100L)
 				.nome("Bruno da Silva")
+				.idade(25)
 				.build();
 		return cliente;
 	}
 	
-	private InfoCliente buildInfoCliente() {
+	private Cliente geraClienteAlterado() {
+		Cliente cliente = Cliente.builder()
+				.id(100L)
+				.nome("Bruno da Silva")
+				.idade(35)
+				.build();
+		return cliente;
+	}
+	
+	private InfoCliente geraInfoCliente() {
 		InfoCliente info = InfoCliente.builder()
 				.cidade("Salvador")
 				.id(01L)

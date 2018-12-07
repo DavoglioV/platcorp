@@ -44,7 +44,7 @@ public class ClienteController {
 	@ApiOperation(value = "Persiste um novo cliente na base de dados")
 	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Cliente persistido com sucesso"),
 			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Parâmetro obrigatório não informado ou regra de validação violada"),
-			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Falha ao tentar estapelecer conexão com um dos servidores externos.")})
+			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Falha ao tentar estapelecer conexão com um dos servidores externos.") })
 	@PostMapping
 	@Transactional
 	public ResponseEntity<?> persistir(@RequestParam("nome") String nome, @RequestParam("idade") int idade,
@@ -55,41 +55,47 @@ public class ClienteController {
 			return ResponseEntity.ok().build();
 		} catch (BadRequestException ex) {
 			return ResponseEntity.badRequest().body(ex.getMessage());
-		} catch(ExternalErrorException ex) {
+		} catch (ExternalErrorException ex) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
 		}
 	}
-	
+
 	@ApiOperation(value = "Altera um cliente salvo na base de Dados")
 	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Cliente alterado com sucesso"),
 			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Cliente não localizado"),
-			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Parâmetro obrigatório não informado ou regra de validação violada")})
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Parâmetro obrigatório não informado ou regra de validação violada") })
 	@PutMapping("/{id}")
-	@Transactional
-	public ResponseEntity<?> alterar(@RequestBody() Cliente cliente, @PathVariable("id") Long id) throws BadRequestException{
+	public ResponseEntity<?> alterar(@RequestBody() Cliente cliente, @PathVariable("id") Long id)
+			throws BadRequestException {
 		try {
-			
+
 			clienteService.alterar(cliente, id);
 			return ResponseEntity.ok().build();
 		} catch (BadRequestException ex) {
 			return ResponseEntity.badRequest().body(ex.getMessage());
 		}
 	}
-	
+
 	@ApiOperation(value = "Busca um cliente pelo ID salvo na base de Dados")
-	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Cliente alterado com sucesso"),
-			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Cliente não localizado"),
-			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Parâmetro obrigatório não informado ou regra de validação violada")})
+	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Cliente localizado com sucesso"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NO_CONTENT, message = "Cliente não localizado"),
+			@ApiResponse(code = HttpURLConnection.HTTP_BAD_REQUEST, message = "Parâmetro obrigatório não informado ou regra de validação violada") })
 	@GetMapping("/{id}")
-	@Transactional
-	public ResponseEntity<?> buscaClientePorId(@PathVariable("id") Long id) throws BadRequestException{
+	public ResponseEntity<?> buscaClientePorId(@PathVariable("id") Long id) throws BadRequestException {
 		try {
-			
-			clienteService.alterar(cliente, id);
-			return ResponseEntity.ok().build();
+
+			return clienteService.buscaPorId(id);
 		} catch (BadRequestException ex) {
 			return ResponseEntity.badRequest().body(ex.getMessage());
 		}
+	}
+
+	@ApiOperation(value = "Busca todos os clientes armazenados na base ")
+	@ApiResponses(value = { @ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Clientes localizados com sucesso"),
+			@ApiResponse(code = HttpURLConnection.HTTP_NO_CONTENT, message = "Não há registros na base de dados") } )
+	@GetMapping()
+	public ResponseEntity<?> buscaTodos(){
+		return clienteService.buscaTodos();
 	}
 
 }

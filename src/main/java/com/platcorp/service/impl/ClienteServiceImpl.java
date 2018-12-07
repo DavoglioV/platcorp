@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.platcorp.domain.entity.Cliente;
@@ -43,8 +44,11 @@ public class ClienteServiceImpl implements ClienteService {
 
 		Optional<Cliente> c = clienteRepository.findById(id);
 		if (c.isPresent()) {
-			c.get().setNome(paramCliente.getNome());
-			c.get().setIdade(paramCliente.getIdade());
+			if( !(null == paramCliente.getNome() || paramCliente.getNome().isEmpty()) )
+				c.get().setNome(paramCliente.getNome());
+			if( paramCliente.getIdade() <= 0)
+				c.get().setIdade(paramCliente.getIdade());
+			
 		}else {
 			throw new BadRequestException("Cliente não encontrado.");
 		}
@@ -63,19 +67,30 @@ public class ClienteServiceImpl implements ClienteService {
 	}
 	
 	@Override
-	public Cliente findClienteById(Long id) throws BadRequestException {
+	public ResponseEntity<Cliente> buscaPorId(Long id) throws BadRequestException {
 		
 		if(id == null) {
 			throw new BadRequestException("Parametro inválido ou não preenchido.");
 		}
 		
-		return clienteRepository.findById(id).get();
+		Cliente cliente = clienteRepository.findById(id).get();
 		
+		if(cliente == null) {
+			return ResponseEntity.noContent().build();
+		}
+		
+		return ResponseEntity.ok().body(cliente);
 	}
-	
+
 	@Override
-	public List<Cliente> findAll() {
-		return clienteRepository.findAll();
+	public ResponseEntity<?> buscaTodos() {
+		List<Cliente> lstCliente = clienteRepository.findAll();
+		
+		if(lstCliente.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+		
+		return ResponseEntity.ok().body(lstCliente);
 	}
 
 	/** valida preenchimento dos campos para inserção de um novo cliente
@@ -91,5 +106,6 @@ public class ClienteServiceImpl implements ClienteService {
 			throw new BadRequestException("Campos não preenchidos ou preenchidos incorretamente.");
 		}
 	}
+
 
 }
