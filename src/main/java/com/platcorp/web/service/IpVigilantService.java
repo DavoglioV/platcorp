@@ -1,5 +1,7 @@
 package com.platcorp.web.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -14,6 +16,8 @@ public class IpVigilantService {
 	
 	@SuppressWarnings("unused")
 	private static final String URL_CSV = "https://ipvigilante.com/csv/";
+	
+	private static final Logger logger = LogManager.getLogger(IpVigilantService.class);
 	/** 
 	 * Busca Localização geografica (Latitude e Longitude)
 	 * do ip da Origem da Requisição
@@ -30,7 +34,8 @@ public class IpVigilantService {
 			localizacao = template.getForObject(URL_JSON + ipOrigem,
 					LocationClientDTO.class);
 		}catch(RestClientException e) {
-			e.printStackTrace();
+			logger.error("Falha ao tentar se comunicar com Serviço de Geolocalização "
+					+ "IP Vigilant. Favor tentar mais tarde.", e);
 			throw new ExternalErrorException(this.getClass(), "Falha ao tentar se comunicar com Serviço de Geolocalização "
 					+ "IP Vigilant. Favor tentar mais tarde.");
 		}

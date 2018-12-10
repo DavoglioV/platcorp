@@ -2,6 +2,8 @@ package com.platcorp.service.impl;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -31,8 +33,12 @@ public class InfoClienteServiceImpl implements InfoClienteService{
 	@Autowired
 	private AmazonService amazon;
 	
+	private static final Logger logger = LogManager.getLogger(InfoClienteService.class);
+	
 	@Override
 	public InfoCliente gerarInformacoesCliente(HttpServletRequest request) throws BusinessException, ExternalErrorException{
+		
+		logger.info("Iniciando Serviço de informação do cliente");
 		
 		String ipRequest = getIp(request);
 		
@@ -75,7 +81,7 @@ public class InfoClienteServiceImpl implements InfoClienteService{
 	private static boolean isPrivateIp(String ipRequest) {
 
 		// Ip de origem é o mesmo do Servidor
-		if (ipRequest.startsWith("0:")) {
+		if (ipRequest.startsWith("0:") || ipRequest.startsWith("127")) {
 			return true;
 		}
 		// Classe A

@@ -52,7 +52,7 @@ public class ClienteController {
 		try {
 			InfoCliente info = infoClienteService.gerarInformacoesCliente(request);
 			clienteService.persistir(nome, idade, info);
-			return ResponseEntity.ok().build();
+			return ResponseEntity.ok().body("Solicitação concluida com sucesso");
 		} catch (BadRequestException ex) {
 			return ResponseEntity.badRequest().body(ex.getMessage());
 		} catch (ExternalErrorException ex) {
