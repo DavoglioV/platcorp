@@ -4,6 +4,15 @@ API com Crud de Clientes, usando API's externas de geolocalização e clima
 
 # Como usar os serviços 
 http://localhost:8080/swagger-ui.html 
+Ou 
+
+- Verificar status do serviço
+  $ curl -X GET http://localhost:8080/actuator/health
+  Retorna: {status:up} caso a aplicação esteja online
+- Adicionar um novo Cliente 
+  $ curl -X POST -F 'nome={nome do novo cliente}' -F 'idade={idade do novo cliente}' http://localhost:8080/api/v1/cliente
+  Retorna: "Solicitação concluida com sucesso"
+- Editar Cliente
 
 
 
